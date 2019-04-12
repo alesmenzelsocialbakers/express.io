@@ -40,7 +40,7 @@ express.application.io = (options) ->
     _.extend options, defaultOptions
     @io = io.listen @server, options
     @io.router = new Object
-    @io.middleware = []
+    # @io.middleware = []
     @io.route = (route, next, options) ->
         if options?.trigger is true
             if route.indexOf ':' is -1
@@ -53,13 +53,11 @@ express.application.io = (options) ->
         else
             for key, value of next
                 @router["#{route}:#{key}"] = value
-    @io.configure => @io.set 'authorization', (data, next) =>
-        unless sessionConfig.store?
-            return async.forEachSeries @io.middleware, (callback, next) ->
-                callback(data, next)
-            , (error) ->
-                return next error if error?
-                next null, true
+
+    @io.use (socket, next) =>
+        data = socket.request
+        return next null, true unless sessionConfig.store?
+
         cookieParser = express.cookieParser()
         cookieParser data, null, (error) ->
             return next error if error?
@@ -76,7 +74,7 @@ express.application.io = (options) ->
                         return next error if error?
                         data.session = new connect.session.Session data, session
                         next null, true
-                    
+
             sessionId = connect.utils.parseSignedCookie rawCookie, sessionConfig.secret
             data.sessionID = sessionId
             sessionConfig.store.get sessionId, (error, session) ->
@@ -84,8 +82,40 @@ express.application.io = (options) ->
                 data.session = new connect.session.Session data, session
                 next null, true
 
-    @io.use = (callback) =>
-        @io.middleware.push callback
+
+    # @io.configure => @io.set 'authorization', (data, next) =>
+    #     unless sessionConfig.store?
+    #         return async.forEachSeries @io.middleware, (callback, next) ->
+    #             callback(data, next)
+    #         , (error) ->
+    #             return next error if error?
+    #             next null, true
+    #     cookieParser = express.cookieParser()
+    #     cookieParser data, null, (error) ->
+    #         return next error if error?
+    #         rawCookie = data.cookies[sessionConfig.key]
+    #         unless rawCookie?
+    #             request = headers: cookie: data.query.cookie
+    #             return cookieParser request, null, (error) ->
+    #                 data.cookies = request.cookies
+    #                 rawCookie = data.cookies[sessionConfig.key]
+    #                 return next "No cookie present", false unless rawCookie?
+    #                 sessionId = connect.utils.parseSignedCookie rawCookie, sessionConfig.secret
+    #                 data.sessionID = sessionId
+    #                 sessionConfig.store.get sessionId, (error, session) ->
+    #                     return next error if error?
+    #                     data.session = new connect.session.Session data, session
+    #                     next null, true
+
+    #         sessionId = connect.utils.parseSignedCookie rawCookie, sessionConfig.secret
+    #         data.sessionID = sessionId
+    #         sessionConfig.store.get sessionId, (error, session) ->
+    #             return next error if error?
+    #             data.session = new connect.session.Session data, session
+    #             next null, true
+
+    # @io.use = (callback) =>
+    #     @io.middleware.push callback
 
     @io.sockets.on 'connection', (socket) =>
         initRoutes socket, @io
@@ -126,7 +156,7 @@ express.application.listen = ->
         @server.listen.apply @server, args
     else
         listen.apply this, args
-        
+
 
 initRoutes = (socket, io) ->
     setRoute = (key, callback) ->
