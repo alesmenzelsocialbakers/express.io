@@ -1,12 +1,12 @@
-connect = require 'express/node_modules/connect'
+connect = require 'connect'
 express = require 'express'
 io = require 'socket.io'
 http = require 'http'
 https = require 'https'
 async = require 'async'
-middleware = require './middleware'
 _ = require 'underscore'
 
+middleware = require './middleware'
 RequestIO = require('./request').RequestIO
 RoomIO = require('./room').RoomIO
 

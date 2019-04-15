@@ -37,25 +37,25 @@
         }
     ],
     "dependencies": {
-        "async": "0.1.22",
-        "coffee-script": "1.4.0",
-        "express": "~3.4.0",
+        "coffee-script": "^1.12.7",
+        "connect": "^2.12.0",
+        "express": "^3.4.0",
         "socket.io": "^1.7.4",
-        "underscore": "1.4.3"
+        "underscore": "^1.4.3"
     },
     "devDependencies": {
-        "chai": "*",
-        "jade": "*",
-        "mocha": "*",
-        "request": "*",
+        "chai": "^4.2.0",
+        "jade": "^1.11.0",
+        "mocha": "^6.1.3",
+        "request": "^2.88.0",
         "rimraf": "^2.6.3",
-        "socket.io-client": "*"
+        "socket.io-client": "^1.7.4"
     },
     "main": "switch.js",
     "scripts": {
         "test": "npx mocha test/test.coffee",
         "compile": "npx coffee -o compiled/ -c lib/",
-        "prepublish": "npx coffee -o compiled/ -c lib/",
+        "prepublish": "npm run compile",
         "postpublish": "rimraf compiled"
     }
 }
